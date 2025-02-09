@@ -59,12 +59,31 @@ self.addEventListener('activate', event => {
 });
 
 
-self.addEventListener('fetch', event => {
-  console.log('Service Worker: Fetch', event.request.url);
-  event.respondWith(
-    caches.match(event.request)
-    .then(response => {
-      return response || fetch(event.request);
-    }).catch(() => caches.match('/offline.html'))
-  );
-});
+self.addEventListener('fetch', function(e) {
+    console.log('Service Worker: Fetching', e.request.url);
+    
+    e.respondWith(
+        caches.match(e.request).then(function(response) {
+            if(response) {
+                console.log('Cache encontrada', e.request.url);
+                return response;
+            }
+            var requestClone = e.request.clone();
+            fetch(requestClone).then(function(response) {
+                if(!response){
+                    console.log('No se encontro respuesta');
+                    return response;
+                }
+                var responseClone = response.clone();
+                
+                caches.open(CACHE_NAME).then(function(cache) {
+                    cache.put(e.request, responseClone);
+                    return response;
+                });
+            })
+            .catch(function(err){
+                console.log('Error al hacer fetch', err);
+            })
+        })
+    )
+})
