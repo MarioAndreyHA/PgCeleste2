@@ -1,8 +1,6 @@
-self.addEventListener('install', event => {
-  console.log('Service Worker instalado');
-  event.waitUntil(
-    caches.open('cache-v4').then(cache => {
-      return cache.addAll([
+var CACHE_NAME = 'v1';
+var cacheFiles = [
+                
         "./",
         "./index.html",
         "./contactanos.html",
@@ -35,29 +33,32 @@ self.addEventListener('install', event => {
         "./imagenes/public-service.png",
         "./imagenes/unam.jpg",
         "./imagenes/valor.png"
-      ]);
-    })
-  );
-});
 
+]
 
-self.addEventListener('activate', event => {
-  console.log('Service worker Activado');
-  const cacheWhitelist = ['cache-v4'];
-  event.waitUntil(
-    caches.keys().then(cacheNames => {
-      return Promise.all(
-        cacheNames.map(cacheName => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
+self.addEventListener('install', function(e) {
+    console.log('Service Worker: Instalado');
+    e.waitUntil(
+        caches.open(CACHE_NAME).then(function(cache) {
+            console.log('Service Worker: Cache abierto');
+            return cache.addAll(cacheFiles);
         })
-      );
-    })
-  );
-  return self.clients.claim();
-});
+    )
+})
 
+self.addEventListener('activate', function(e) {
+    console.log('Service Worker: Activado');
+    e.waitUntil()(
+        caches.keys().then(function(cacheNames) {
+            return Promise.all(cacheNames.map(function(thisCacheName) {
+                   if(thisCacheName !== CACHE_NAME) {
+                    console.log('Service Worker: Cache viejo eliminado', thisCacheName);
+                    return caches.delete(thisCacheName);
+                   }
+            }))
+        })
+    )
+})
 
 self.addEventListener('fetch', function(e) {
     console.log('Service Worker: Fetching', e.request.url);
