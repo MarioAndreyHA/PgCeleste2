@@ -3,7 +3,7 @@ self.addEventListener('install', event => {
   event.waitUntil(
     caches.open('cache-v4').then(cache => {
       return cache.addAll([
-        "/",
+        "./",
         "./index.html",
         "./contactanos.html",
         "./Oferta_educativa.html",
